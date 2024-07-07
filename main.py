@@ -112,6 +112,8 @@ def run():
             if event_msg.event.kind == EventKind.ENCRYPTED_DIRECT_MESSAGE:
                 msg_decrypted = EncryptedDirectMessage()
                 msg_decrypted.decrypt(private_key_hex=private_key.hex(), encrypted_message=event_msg.event.content, public_key_hex=event_msg.event.pubkey)
+                if (len(msg_decrypted.cleartext_content) < 4):
+                    continue
                 print ("Private message '" +msg_decrypted.cleartext_content + "' from " + event_msg.event.pubkey)
                 response = respond(msg_decrypted.cleartext_content)
                 # print("--> " + response)
@@ -129,6 +131,8 @@ def run():
             elif event_msg.event.kind == EventKind.TEXT_NOTE:
                 print(f"Received public note: {event_msg.event.content}")
                 content = re.sub(r'\b(nostr:)?(nprofile|npub)[0-9a-z]+[\s]*', '', event_msg.event.content)
+                if (len(content) < 4):
+                    continue
                 print(f"Received public note: {content}")
                 if recipient_pubkey != private_key.public_key.bech32():
                     print("Responding...")
