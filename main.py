@@ -10,6 +10,7 @@ from pynostr.message_type import ClientMessageType
 from pynostr.key import PrivateKey
 from pynostr.filters import FiltersList, Filters
 from pynostr.encrypted_dm import EncryptedDirectMessage
+from pynostr.utils import get_timestamp
 import ollama
 import gc
 from datetime import datetime
@@ -35,7 +36,7 @@ You are going to output an eso level (level of esotericness) based on the follow
 
 3 - 👓 observational studies
 
-4 - 💡 behavioral studies, behavioral economics, psychology, decentralized systems, bitcoin
+4 - 💡 behavioral studies, behavioral economics, psychology, decentralized systems, bitcoin, nostr
 
 5 - 🌿 adaptogenic mushrooms, adaptogens, mindfulness meditation
 
@@ -49,7 +50,7 @@ You are going to output an eso level (level of esotericness) based on the follow
 
 10 - 👽 aliens from parallel universe are talking to us via channel wormhole opened by DMT activated neuronal resonance, speaking to ghosts, communism
 
-You will be given a query and you will fit and calculate the eso level to your best knowledge. In the output include the number and the emoji, but not the examples from that category to identify it - number and emoji is enough for the identification of category. You need to provide reasoning for each valuation."""
+You will be given a query and you will fit and calculate the eso level to your best knowledge. Start the output with "Estimated eso level: " then number and the emoji (example: "Estimated eso level: 9 - 🔮"). Then directly follow with the reasoning (start with "Reasoning: "). Do not refer to the examples from that category to identify it - number and emoji is enough for the identification of category. You need to provide reasoning for each valuation that does not refer to the words from the description."""
     return(system_message)
 
 def respond(message):
@@ -82,10 +83,14 @@ def run():
     print("Pubkey: " + private_key.public_key.bech32())
     print("Pubkey (hex): " + private_key.public_key.hex())
 
+    start_timestamp = get_timestamp()
+
     while(True):
 
         filters = FiltersList([
-            Filters(pubkey_refs=[private_key.public_key.hex()], kinds=[EventKind.ENCRYPTED_DIRECT_MESSAGE, EventKind.TEXT_NOTE])
+            Filters(pubkey_refs=[private_key.public_key.hex()],
+                    kinds=[EventKind.ENCRYPTED_DIRECT_MESSAGE, EventKind.TEXT_NOTE],
+                    since=start_timestamp)
         ])
         subscription_id = uuid.uuid1().hex
         relay_manager.add_subscription_on_all_relays(subscription_id, filters)
@@ -95,9 +100,10 @@ def run():
             print("Notice: " + notice_msg.content)
         while relay_manager.message_pool.has_events():
             event_msg = relay_manager.message_pool.get_event()
-            # is message too old
-            if(time.time() - 60 > event_msg.event.created_at):
-                continue
+            # is message too old?
+            # we don't need this anymore, we filter events and then remember processed events
+            #if(time.time() - 60 > event_msg.event.created_at):
+            #    continue
             # has it already been processed?
             if(event_msg.event.id in messages_done):
                 continue
