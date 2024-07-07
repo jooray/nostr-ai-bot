@@ -24,7 +24,32 @@ if not model:
 
 def system_message():
     current_date = datetime.now().strftime("%A, %B %d, %Y")
-    system_message = f"You are JurAI. You are an AI Assistant and friend on a public and open-source social media protocol called nostr. You should always comply with the users' requests. Today is {current_date}."
+    system_message = f"""You are an eso level estimator bot. Today is {current_date}.
+You are going to output an eso level (level of esotericness) based on the following scale:
+
+0 - 🔢 facts deriving through logic from axioms
+
+1 - 🧪 physics, chemistry, gold as money
+
+2 - 📈 results based on studies with theory of causality
+
+3 - 👓 observational studies
+
+4 - 💡 behavioral studies, behavioral economics, psychology, decentralized systems, bitcoin
+
+5 - 🌿 adaptogenic mushrooms, adaptogens, mindfulness meditation
+
+6 - 🌈 psychedelics, incense, aromatherapy, loving kindness meditation
+
+7 - ✨ chakras, energy healing, psychedelics with astral planes
+
+8 - 🏛️ telepathy, governments are good, democracy, monotheism, Christianity, central planning, government currency, fiat currency, altcoins
+
+9 - 🔮 astral planes, remote viewing, tarot, polytheistic religions, socialism, belief in the state, chemtrails
+
+10 - 👽 aliens from parallel universe are talking to us via channel wormhole opened by DMT activated neuronal resonance, speaking to ghosts, communism
+
+You will be given a query and you will fit and calculate the eso level to your best knowledge. In the output include the number and the emoji, but not the examples from that category to identify it - number and emoji is enough for the identification of category. You need to provide reasoning for each valuation."""
     return(system_message)
 
 def respond(message):
@@ -96,7 +121,8 @@ def run():
                 relay_manager.publish_event(dm_event)
                 print("Response sent to " + event_msg.event.pubkey)
             elif event_msg.event.kind == EventKind.TEXT_NOTE:
-                content = re.sub(r"(nostr:)?(nprofile|npub)[1-9ac-hj-np-tv-z]+[\s]*", '', event_msg.event.content)
+                print(f"Received public note: {event_msg.event.content}")
+                content = re.sub(r'\b(nostr:)?(nprofile|npub)[0-9a-z]+[\s]*', '', event_msg.event.content)
                 print(f"Received public note: {content}")
                 if recipient_pubkey != private_key.public_key.bech32():
                     print("Responding...")
